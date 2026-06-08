@@ -4,8 +4,9 @@
 /*
 Interface do módulo da Quadra.
 
-Basicamente é um retângulo que será identificado por um CEP (alfanúmerico).
+Basicamente é um retângulo que será identificado por um CEP (alfanumérico).
 Tem 4 faces (pontos cardeais) e a âncora é o canto SUDESTE.
+Obs: tomar cuidado com a notação invertida (eixo x fica por cima).
 */
 
 // Constantes.
@@ -29,7 +30,7 @@ typedef struct Quadra Quadra;
 
 /**
  * @brief Função que cria uma quadra com seus respectivos atributos.
- * @param cep CEP alfanúmerico (identificador).
+ * @param cep CEP alfanumérico (identificador).
  * @param x Coordenada x do âncora.
  * @param y Coordenada y do âncora.
  * @param w Largura do retângulo (quadra).
@@ -109,10 +110,28 @@ const char* getQuadraCStrk(const Quadra *q);
 // Fim getters
 
 /**
- * @brief Confirma (ou nõa) se o caracter informado corresponde a uma face existente.
+ * @brief Confirma (ou não) se o caracter informado corresponde a uma face existente.
  * @param face Caracter que indica face.
  * @return QUADRA_OK -> 1 (válida) / Quadra_ERRO -> 0 (não válida).
  */
 int faceValida(char face);
+
+/**
+ * @brief Converte um caracter de face para a etiqueta
+ * @param face Caracter que indica a face
+ * @return A etiqueta correspondente. 
+ */
+FaceQuadra charParaFaceQuadra(char face);
+
+/**
+ * @brief Calcula a coordenada (x, y) de um endereço.
+ * @param Quadra Ponteiro para a quadra analisada.
+ * @param face A face da quadra.
+ * @param num Número do endereço.
+ * @param outX Ponteiro para double onde será armazenado o x resultante.
+ * @param outY Ponteiro para double onde será armazenado o Y resultante.
+ * @details O cálculo baseia-se nas projeções a partir da âncora (superior-esquerda)
+ */
+void obterCoordenadasEndereco(const Quadra *q, FaceQuadra face, double num, double *outX, double *outY);
 
 #endif
