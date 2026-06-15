@@ -112,7 +112,7 @@ const char* getQuadraCStrk(const Quadra *q);
 /**
  * @brief Confirma (ou não) se o caracter informado corresponde a uma face existente.
  * @param face Caracter que indica face.
- * @return QUADRA_OK -> 1 (válida) / Quadra_ERRO -> 0 (não válida).
+ * @return QUADRA_OK -> 1 (válida) / QUADRA_ERRO -> 0 (não válida).
  */
 int faceValida(char face);
 
@@ -125,12 +125,15 @@ FaceQuadra charParaFaceQuadra(char face);
 
 /**
  * @brief Calcula a coordenada (x, y) de um endereço.
- * @param Quadra Ponteiro para a quadra analisada.
- * @param face A face da quadra.
+ * @param Quadra Ponteiro para a quadra analisada. *Não deve ser NULL.
+ * @param face A face da quadra. *Deve ser face válida 
  * @param num Número do endereço.
- * @param outX Ponteiro para double onde será armazenado o x resultante.
- * @param outY Ponteiro para double onde será armazenado o Y resultante.
+ * @param outX Ponteiro para double onde será armazenado o x resultante. *Não deve ser NULL
+ * @param outY Ponteiro para double onde será armazenado o Y resultante. *Não deve ser NULL
  * @details O cálculo baseia-se nas projeções a partir da âncora (superior-esquerda)
+ * SE ------ SO
+ * |         |
+ * NE ------ NO
  */
 void obterCoordenadasEndereco(const Quadra *q, FaceQuadra face, double num, double *outX, double *outY);
 

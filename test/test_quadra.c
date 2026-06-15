@@ -48,11 +48,8 @@ void test_criar_ComDimensoesNegativas_DeveRetornarNull(void){
     TEST_ASSERT_NULL(q);
 }
 
-void test_destruirComParametroNull_naoQuebrar(void){
-    destruirQuadra(NULL);
-}
-
 // Getters
+// Pré-condição: q != NULL (assert). Não testamos getters com NULL. Seguindo o manual descrito para os testes unitários.
 
 void test_getters_RetornarValoresCorretos(void){
     Quadra *q = quadra_padrao();
@@ -69,17 +66,6 @@ void test_getters_RetornarValoresCorretos(void){
     TEST_ASSERT_FLOAT_WITHIN(0.001,  2.0, getQuadraSw(q));
 
     destruirQuadra(q);
-}
-
-void test_getters_ParametrosNull_naoQuebrar(void){
-    TEST_ASSERT_NULL(getQuadraCep(NULL));
-    TEST_ASSERT_NULL(getQuadraCFill(NULL));
-    TEST_ASSERT_NULL(getQuadraCStrk(NULL));
-
-    TEST_ASSERT_FLOAT_WITHIN(0.001, 0.0, getQuadraX(NULL));
-    TEST_ASSERT_FLOAT_WITHIN(0.001, 0.0, getQuadraY(NULL));
-    TEST_ASSERT_FLOAT_WITHIN(0.001, 0.0, getQuadraW(NULL));
-    TEST_ASSERT_FLOAT_WITHIN(0.001, 0.0, getQuadraH(NULL));
 }
 
 // faceValida
@@ -99,6 +85,7 @@ void test_faceValida_FacesInvalidas(void){
 
 // Etiquetas
 
+// Pré-condição: face deve ser válida. Só testa com face válida
 void test_charParaFaceQuadra_ConversaoCorreta(void){
     TEST_ASSERT_EQUAL_INT(FACE_N, charParaFaceQuadra('N'));
     TEST_ASSERT_EQUAL_INT(FACE_S, charParaFaceQuadra('S'));
@@ -108,6 +95,7 @@ void test_charParaFaceQuadra_ConversaoCorreta(void){
 
 // Conversão para o endereço
 
+// Pré-condições: q != NULL, face válida, num dentro do comprimento da face (assert).
 // Face S: y fixo na âncora (menor y = 20). num varia ao longo de x.
 void test_obterCoordenadas_FaceS_YFixoNaAncora(void){
     Quadra *q = quadra_padrao();
@@ -214,9 +202,7 @@ int main(void){
     RUN_TEST(test_criar_ComCFillNulo_DeveRetornarNull);
     RUN_TEST(test_criar_ComCStrkNulo_DeveRetornarNull);
     RUN_TEST(test_criar_ComDimensoesNegativas_DeveRetornarNull);
-    RUN_TEST(test_destruirComParametroNull_naoQuebrar);
     RUN_TEST(test_getters_RetornarValoresCorretos);
-    RUN_TEST(test_getters_ParametrosNull_naoQuebrar);
     RUN_TEST(test_faceValida_FacesCorretas);
     RUN_TEST(test_faceValida_FacesInvalidas);
     RUN_TEST(test_charParaFaceQuadra_ConversaoCorreta);
