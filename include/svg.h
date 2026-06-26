@@ -75,6 +75,8 @@ void svgRetangulo(ArqSvg *f, double x, double y, double w, double h,
  * @param cor Cor do texto (nome SVG ou código hexadecimal). Não deve ser NULL (assert).
  * @details Tamanho de fonte não é configurável nesta versão; usa um
  *          tamanho padrão definido pela implementação.
+ *          Os caracteres especiais de XML presentes em texto (&, <, >)
+ *          são escapados automaticamente antes da escrita.
  */
 void svgTexto(ArqSvg *f, double x, double y, const char *texto, const char *cor);
 
