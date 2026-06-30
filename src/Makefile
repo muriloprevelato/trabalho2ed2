@@ -1,0 +1,102 @@
+PROJ_NAME = ted
+ALUNO     = muriloP
+
+CC     = gcc
+CFLAGS = -ggdb -O0 -std=c99 -fstack-protector-all \
+         -Werror=implicit-function-declaration \
+         -Wall -Wextra
+LDFLAGS = -O0
+
+# Diretórios
+SRC  = .
+INC  = ../include
+TST  = ../test
+UNI  = ../unity
+
+# =============================================================================
+# Objetos dos módulos
+# =============================================================================
+OBJS = $(SRC)/hashGenerica.o \
+       $(SRC)/quadra.o       \
+       $(SRC)/cidade.o       \
+       $(SRC)/svg.o          \
+       $(SRC)/leitorGeo.o
+
+# =============================================================================
+# Flags de include compartilhadas
+# =============================================================================
+INC_FLAGS = -I $(INC) -I $(UNI)
+
+# =============================================================================
+# Target principal
+# =============================================================================
+$(PROJ_NAME): $(OBJS) $(SRC)/main.o
+	$(CC) $(LDFLAGS) -o $(PROJ_NAME) $(OBJS) $(SRC)/main.o
+
+ted: $(PROJ_NAME)
+
+# =============================================================================
+# Regra genérica para compilar .c -> .o dentro de src/
+# =============================================================================
+$(SRC)/%.o: $(SRC)/%.c
+	$(CC) -c $(CFLAGS) $(INC_FLAGS) $< -o $@
+
+# =============================================================================
+# Dependências explícitas de cada módulo
+# =============================================================================
+$(SRC)/hashGenerica.o: $(SRC)/hashGenerica.c $(INC)/hashGenerica.h
+
+$(SRC)/quadra.o: $(SRC)/quadra.c $(INC)/quadra.h
+
+$(SRC)/cidade.o: $(SRC)/cidade.c $(INC)/cidade.h \
+                 $(INC)/hashGenerica.h $(INC)/quadra.h
+
+$(SRC)/svg.o: $(SRC)/svg.c $(INC)/svg.h
+
+$(SRC)/leitorGeo.o: $(SRC)/leitorGeo.c $(INC)/leitorGeo.h \
+                    $(INC)/cidade.h $(INC)/quadra.h
+
+$(SRC)/main.o: $(SRC)/main.c \
+               $(INC)/cidade.h $(INC)/quadra.h $(INC)/hashGenerica.h \
+               $(INC)/svg.h $(INC)/leitorGeo.h
+
+# =============================================================================
+# Testes unitários — target genérico
+# =============================================================================
+DEPS_quadra      = $(SRC)/quadra.o
+DEPS_hashGenerica = $(SRC)/hashGenerica.o
+DEPS_cidade      = $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o
+DEPS_svg         = $(SRC)/svg.o
+DEPS_leitorGeo   = $(SRC)/leitorGeo.o $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o
+
+test:
+ifndef MODULO
+	$(error Uso: make test MODULO=<nome>. Ex: make test MODULO=quadra)
+endif
+	$(MAKE) $(DEPS_$(MODULO))
+	$(CC) $(CFLAGS) $(INC_FLAGS) \
+	    $(DEPS_$(MODULO)) \
+	    $(TST)/test_$(MODULO).c $(UNI)/unity.c \
+	    -o $(TST)/run_$(MODULO)
+	$(TST)/run_$(MODULO)
+
+# =============================================================================
+# Roda todos os módulos de teste em sequência
+# =============================================================================
+MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo
+
+tstall:
+	@for m in $(MODULOS_TESTAVEIS); do \
+	    $(MAKE) test MODULO=$$m || exit 1; \
+	done
+
+# =============================================================================
+# Limpeza
+# =============================================================================
+clean:
+	rm -f $(SRC)/*.o $(PROJ_NAME)
+	rm -f $(addprefix $(TST)/run_,$(MODULOS_TESTAVEIS))
+	rm -f temp_*.geo temp_*.svg temp_*.qry temp_*.txt
+	rm -f teste_*_tmp.geo teste_*_tmp.svg
+
+.PHONY: ted test tstall clean
