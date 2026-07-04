@@ -22,7 +22,7 @@ Pré-condições (valendo para todo o módulo):
     abertura do arquivo: falha ao abrir o caminho informado (ex:
     diretório sem permissão, caminho inválido) é erro de ambiente, não
     de lógica de programa — sinalizada por retorno NULL, nunca por
-    assert. Ver manual de testes, seção 7.5.
+    assert.
 */
 
 // Tipo opaco para representar um arquivo SVG aberto para escrita.
