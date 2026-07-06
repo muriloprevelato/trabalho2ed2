@@ -20,7 +20,9 @@ OBJS = $(SRC)/hashGenerica.o \
        $(SRC)/quadra.o       \
        $(SRC)/cidade.o       \
        $(SRC)/svg.o          \
-       $(SRC)/leitorGeo.o
+       $(SRC)/leitorGeo.o	 \
+	   $(SRC)/vertice.o 	 \
+	   $(SRC)/grafo.o
 
 # =============================================================================
 # Flags de include compartilhadas
@@ -56,9 +58,13 @@ $(SRC)/svg.o: $(SRC)/svg.c $(INC)/svg.h
 $(SRC)/leitorGeo.o: $(SRC)/leitorGeo.c $(INC)/leitorGeo.h \
                     $(INC)/cidade.h $(INC)/quadra.h
 
+$(SRC)/vertice.o: $(SRC)/vertice.c $(INC)/vertice.h
+ 
+$(SRC)/grafo.o: $(SRC)/grafo.c $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h
+
 $(SRC)/main.o: $(SRC)/main.c \
                $(INC)/cidade.h $(INC)/quadra.h $(INC)/hashGenerica.h \
-               $(INC)/svg.h $(INC)/leitorGeo.h
+               $(INC)/svg.h $(INC)/leitorGeo.h $(INC)/vertice.h $(INC)/grafo.h
 
 # =============================================================================
 # Testes unitários — target genérico
@@ -68,6 +74,8 @@ DEPS_hashGenerica = $(SRC)/hashGenerica.o
 DEPS_cidade      = $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o
 DEPS_svg         = $(SRC)/svg.o
 DEPS_leitorGeo   = $(SRC)/leitorGeo.o $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o
+DEPS_vertice     = $(SRC)/vertice.o
+DEPS_grafo       = $(SRC)/grafo.o $(SRC)/vertice.o $(SRC)/hashGenerica.o
 
 test:
 ifndef MODULO
@@ -83,7 +91,7 @@ endif
 # =============================================================================
 # Roda todos os módulos de teste em sequência
 # =============================================================================
-MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo
+MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo vertice grafo
 
 tstall:
 	@for m in $(MODULOS_TESTAVEIS); do \
@@ -96,7 +104,7 @@ tstall:
 clean:
 	rm -f $(SRC)/*.o $(PROJ_NAME)
 	rm -f $(addprefix $(TST)/run_,$(MODULOS_TESTAVEIS))
-	rm -f temp_*.geo temp_*.svg temp_*.qry temp_*.txt
+	rm -f temp_*.geo temp_*.pm temp_*.svg temp_*.qry temp_*.txt
 	rm -f teste_*_tmp.geo teste_*_tmp.svg
 
 .PHONY: ted test tstall clean
