@@ -63,8 +63,7 @@ void fechaSvg(ArqSvg *f);
  *          Quadra) é responsabilidade de quem chama esta função. 
  *          ** No caso, só vai repassar aquilo que já foi delimitado no getQuadraX e assim por diante...
  */
-void svgRetangulo(ArqSvg *f, double x, double y, double w, double h,
-                   const char *cfill, const char *cstrk, double sw);
+void svgRetangulo(ArqSvg *f, double x, double y, double w, double h, const char *cfill, const char *cstrk, double sw);
 
 /**
  * @brief Escreve um texto no arquivo SVG.
@@ -90,7 +89,24 @@ void svgTexto(ArqSvg *f, double x, double y, const char *texto, const char *cor)
  * @param cor Cor do traço (nome SVG ou código hexadecimal). Não deve ser NULL (assert).
  * @param sw Espessura do traço. Deve ser >= 0 (assert).
  */
-void svgLinha(ArqSvg *f, double x1, double y1, double x2, double y2,
-              const char *cor, double sw);
+void svgLinha(ArqSvg *f, double x1, double y1, double x2, double y2, const char *cor, double sw);
+
+/**
+ * @brief Escreve um círculo no arquivo SVG.
+ * @param f Ponteiro para o arquivo aberto. Não deve ser NULL (assert).
+ * @param cx Coordenada x do centro do círculo (SVG).
+ * @param cy Coordenada y do centro do círculo (SVG).
+ * @param r Raio do círculo. Deve ser >= 0 (assert).
+ * @param cfill Cor de preenchimento (nome SVG ou código hexadecimal).
+ *        Não deve ser NULL (assert).
+ * @param cstrk Cor da borda (nome SVG ou código hexadecimal). Não deve
+ *        ser NULL (assert).
+ * @param sw Espessura da borda. Deve ser >= 0 (assert).
+ * @details Usado tanto para marcadores de ponto (ex: vértices do mapa
+ *          viário) quanto, futuramente, para os elementos animados dos
+ *          percursos (<animateMotion/>, ver exemplo do enunciado) — o
+ *          círculo é a primitiva natural para ambos os casos.
+ */
+void svgCirculo(ArqSvg *f, double cx, double cy, double r, const char *cfill, const char *cstrk, double sw);
 
 #endif

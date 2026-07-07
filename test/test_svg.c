@@ -163,6 +163,27 @@ void test_svgLinha_ConteudoContemTagECoordenadas(void){
     remove(ARQ_TMP);
 }
 
+void test_svgCirculo_ConteudoContemTagECoordenadas(void){
+    ArqSvg *f = abreEscritaSvg(ARQ_TMP, 200.0, 200.0);
+    TEST_ASSERT_NOT_NULL(f);
+ 
+    svgCirculo(f, 30.0, 40.0, 5.0, "red", "black", 1.0);
+ 
+    fechaSvg(f);
+ 
+    char *conteudo = lerArquivoCompleto(ARQ_TMP);
+    TEST_ASSERT_NOT_NULL(conteudo);
+ 
+    TEST_ASSERT_NOT_NULL(strstr(conteudo, "<circle"));
+    TEST_ASSERT_NOT_NULL(strstr(conteudo, "30"));
+    TEST_ASSERT_NOT_NULL(strstr(conteudo, "40"));
+    TEST_ASSERT_NOT_NULL(strstr(conteudo, "red"));
+    TEST_ASSERT_NOT_NULL(strstr(conteudo, "black"));
+ 
+    free(conteudo);
+    remove(ARQ_TMP);
+}
+
 // Múltiplos elementos no mesmo arquivo
 
 // *Obs: Confirma que chamadas sucessivas se acumulam no arquivo (não se sobrescrevem) e que o documento continua bem-formado ao final.
@@ -198,6 +219,7 @@ int main(void){
     RUN_TEST(test_svgTexto_ConteudoContemTagETexto);
     RUN_TEST(test_svgTexto_CaracteresEspeciais_SaoEscapados);
     RUN_TEST(test_svgLinha_ConteudoContemTagECoordenadas);
+    RUN_TEST(test_svgCirculo_ConteudoContemTagECoordenadas);
     RUN_TEST(test_multiplosElementos_TodosPresentesNoArquivoFinal);
 
     return UNITY_END();

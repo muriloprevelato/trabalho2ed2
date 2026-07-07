@@ -117,3 +117,16 @@ void svgLinha(ArqSvg *f, double x1, double y1, double x2, double y2,
             "stroke=\"%s\" stroke-width=\"%.2f\" />\n",
             x1, y1, x2, y2, cor, sw);
 }
+
+void svgCirculo(ArqSvg *f, double cx, double cy, double r, const char *cfill, const char *cstrk, double sw){
+    assert(f != NULL);
+    assert(cfill != NULL);
+    assert(cstrk != NULL);
+    assert(r >= 0.0);
+    assert(sw >= 0.0);
+ 
+    fprintf(f->fp,
+            "<circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" "
+            "fill=\"%s\" stroke=\"%s\" stroke-width=\"%.2f\" />\n",
+            cx, cy, r, cfill, cstrk, sw);
+}
