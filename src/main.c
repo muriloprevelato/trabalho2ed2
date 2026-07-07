@@ -283,7 +283,7 @@ int main(int argc, char const *argv[]){
         ContextoDesenhoGrafo ctxGrafo = { svgGeo, grafo };
         percorrerVertices(grafo, visitanteDesenharVerticeEArestas, &ctxGrafo);
     }
-    
+
     fechaSvg(svgGeo);
 
     
@@ -299,6 +299,7 @@ int main(int argc, char const *argv[]){
 
     // clean
 
+    if(grafo!= NULL) destruirGrafo(grafo);
     destruirCidade(cidade);
     return 0;
 }
