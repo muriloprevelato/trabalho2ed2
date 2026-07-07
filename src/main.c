@@ -6,6 +6,9 @@
 #include "quadra.h"
 #include "svg.h"
 #include "leitorGeo.h"
+#include "grafo.h"
+#include "vertice.h"
+#include "leitorVia.h"
 
 #define PATH_MAX_TAM  1024 // tamanho de dir_entrada, dir_saida e nomes de arquivo
 #define NOME_MAX_TAM   256
@@ -93,6 +96,55 @@ static void visitanteDesenho(Quadra *q, void *contexto){
              getQuadraCep(q),
              "black");
 }
+ 
+// Estende o bounding box (já calculado a partir das quadras) para
+// também considerar as coordenadas dos vértices do grafo 
+static void visitanteBBoxVertice(Vertice *v, void *contexto){
+    ContextoBBox *ctx = (ContextoBBox *) contexto;
+ 
+    double x = getVerticeX(v);
+    double y = getVerticeY(v);
+ 
+    if(x < ctx->xMin) ctx->xMin = x;
+    if(y < ctx->yMin) ctx->yMin = y;
+    if(x > ctx->xMax) ctx->xMax = x;
+    if(y > ctx->yMax) ctx->yMax = y;
+}
+ 
+#define RAIO_VERTICE 2.0    // raio do círculo que marca cada vértice no SVG
+#define COR_VIA "gray" // .via não tem comando de cor. Escolhi uma cor neutra. Fiz testes com amarelo e estava ruim
+#define SW_VIA 1.0    
+ 
+// Contexto para desenhar as arestas de saída de UM vértice específico
+typedef struct {
+    ArqSvg *svg;
+    Vertice *origemAtual;
+} ContextoDesenhoArestas;
+ 
+static void visitanteDesenharAresta(Aresta *a, void *contexto){
+    ContextoDesenhoArestas *ctx = (ContextoDesenhoArestas *) contexto;
+    Vertice *destino = getArestaDestino(a);
+ 
+    svgLinha(ctx->svg, getVerticeX(ctx->origemAtual), getVerticeY(ctx->origemAtual), getVerticeX(destino),getVerticeY(destino), COR_VIA, SW_VIA);
+}
+ 
+// Contexto para o padrão composto documentado em grafo.h: percorre
+// TODOS os vértices e, para cada um, percorre suas arestas de saída
+typedef struct {
+    ArqSvg *svg;
+    Grafo *grafo;
+} ContextoDesenhoGrafo;
+ 
+static void visitanteDesenharVerticeEArestas(Vertice *v, void *contexto){
+    ContextoDesenhoGrafo *ctx = (ContextoDesenhoGrafo *) contexto;
+
+    svgCirculo(ctx->svg, getVerticeX(v), getVerticeY(v), RAIO_VERTICE, COR_VIA, "black", 0.5);
+
+    ContextoDesenhoArestas ctxArestas = { ctx->svg, v };
+    percorrerArestasSaindo(ctx->grafo, getVerticeId(v),
+                            visitanteDesenharAresta, &ctxArestas);
+}
+
 
 // main 
 
@@ -177,37 +229,64 @@ int main(int argc, char const *argv[]){
         return 1;
     }
 
+    // Leitura do .via -> Opcional
+
+    Grafo *grafo = NULL;
+    if(arq_via[0] != '\0'){
+        char caminho_via[CAMINHO_MAX_TAM];
+        snprintf(caminho_via, CAMINHO_MAX_TAM, "%s/%s", dir_entrada, arq_via);
+ 
+        grafo = criarGrafo();
+        if(grafo == NULL){
+            fprintf(stderr, "[main] aviso: falha ao criar o grafo,"
+                            " viario nao sera desenhado\n");
+        } else if(lerArquivoVia(caminho_via, grafo) != VIA_OK){
+            fprintf(stderr, "[main] aviso: nao foi possivel abrir o arquivo"
+                            " .via: %s -- viario nao sera desenhado\n",
+                    caminho_via);
+            destruirGrafo(grafo);
+            grafo = NULL;
+        }
+    }
+
     // SVG inicial (após leitura do .geo)
 
-    // Passa 1: calcula o bounding box de todas as quadras para dimensionar
+    // Passo 1: calcula o bounding box de todas as quadras para dimensionar
     // o canvas - assim o SVG se ajusta ao tamanho real do mapa.
     ContextoBBox bbox = { DBL_MAX, DBL_MAX, -DBL_MAX, -DBL_MAX };
     percorrerQuadrasCidade(cidade, visitanteBBox, &bbox);
-
-    // Cidade vazia ou sem quadras: usa canvas mínimo para não travar.
+    if(grafo != NULL){
+        percorrerVertices(grafo, visitanteBBoxVertice, &bbox);
+    }
+ 
+    // Cidade vazia e sem grafo (ou grafo tambem vazio): canvas minimo.
     if(bbox.xMin == DBL_MAX){
         bbox.xMax = bbox.yMax = 100.0;
     }
-
+ 
     ArqSvg *svgGeo = abreEscritaSvg(caminho_svg_geo, bbox.xMax, bbox.yMax);
     if(svgGeo == NULL){
         fprintf(stderr, "[main] erro: nao foi possivel criar o SVG: %s\n",
                 caminho_svg_geo);
+        if(grafo != NULL) destruirGrafo(grafo);
         destruirCidade(cidade);
         return 1;
     }
 
-    // Passa 2: desenha todas as quadras.
+    // Passo 2: desenha todas as quadras.
     ContextoDesenho ctxDesenho = { svgGeo };
     percorrerQuadrasCidade(cidade, visitanteDesenho, &ctxDesenho);
+
+    // Desenha o mapa viário (vértices + arestas) por cima das quadras,
+    // se um .via foi fornecido e lido com sucesso.
+    if(grafo != NULL){
+        ContextoDesenhoGrafo ctxGrafo = { svgGeo, grafo };
+        percorrerVertices(grafo, visitanteDesenharVerticeEArestas, &ctxGrafo);
+    }
+    
     fechaSvg(svgGeo);
 
-    // *** Não implementado ainda .via 
-
-    if(arq_via[0] != '\0'){
-        fprintf(stderr, "[main] aviso: -v fornecido mas modulo de grafo ainda"
-                        " nao implementado, ignorando %s\n", arq_via);
-    }
+    
 
     // *** Não implementando ainda .qry 
 
