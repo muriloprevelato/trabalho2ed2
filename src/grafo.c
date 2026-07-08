@@ -187,6 +187,15 @@ double getArestaVm(const Aresta *a){
     return a->vm;
 }
 
+int setArestaVm(Aresta *a, double novoVm){
+    assert(a != NULL);
+ 
+    if(novoVm < 0.0) return GRAFO_ERRO; // mesma validação de grafoInserirAresta
+ 
+    a->vm = novoVm;
+    return GRAFO_OK;
+}
+
 // Percorrer os vértices
 typedef struct {
     VisitanteVertice visitanteReal;

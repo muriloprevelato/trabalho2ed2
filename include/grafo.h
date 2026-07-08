@@ -172,6 +172,18 @@ double getArestaCmp(const Aresta *a);
 double getArestaVm(const Aresta *a);
 
 /**
+ * @brief Atualiza a velocidade média de uma aresta.
+ * @param a Ponteiro para a aresta. Não deve ser NULL (assert).
+ * @param novoVm Nova velocidade média, em m/s. Deve ser >= 0; caso contrário a atualização é rejeitada.
+ * @return GRAFO_OK se a atualização foi aplicada; GRAFO_ERRO se novoVm for negativo.
+ * @details Mesma validação usada em grafoInserirAresta para o vm
+ *          inicial - vm negativo não representa uma velocidade física
+ *          válida. Usado pelos comandos mvm e exp do .qry, que mutam vm
+ *          de arestas já existentes.
+ */
+int setArestaVm(Aresta *a, double novoVm);
+
+/**
  * @brief Assinatura de função usada para visitar cada vértice durante uma varredura do grafo (ver percorrerVertices).
  * @param v Ponteiro para o vértice visitado.
  * @param contexto Ponteiro opaco fornecido por quem chamou percorrerVertices, repassado sem modificação a cada visita.
