@@ -226,4 +226,34 @@ typedef void (*VisitanteAresta)(Aresta *a, void *contexto);
 void percorrerArestasSaindo(const Grafo *g, const char *idOrigem,
                              VisitanteAresta visitante, void *contexto);
 
+/**
+ * @brief Assinatura de função usada para visitar cada aresta durante
+ *        uma varredura de TODAS as arestas do grafo (ver
+ *        percorrerTodasArestas).
+ * @param idOrigem Id do vértice de origem da aresta visitada. Diferente
+ *        de VisitanteAresta (usado em percorrerArestasSaindo), aqui a
+ *        origem precisa vir explícita: quem chama percorrerTodasArestas
+ *        não escolheu de qual vértice partir, então não tem como
+ *        capturar a origem no próprio contexto - ela só é conhecida
+ *        durante a varredura interna.
+ * @param a Ponteiro para a aresta visitada.
+ * @param contexto Ponteiro opaco fornecido por quem chamou
+ *        percorrerTodasArestas, repassado sem modificação a cada visita.
+ */
+typedef void (*VisitanteArestaCompleta)(const char *idOrigem, Aresta *a, void *contexto);
+ 
+/**
+ * @brief Percorre TODAS as arestas do grafo (de todos os vértices, não
+ *        só de um), chamando o visitante fornecido para cada uma.
+ * @param g Ponteiro para o grafo. Não deve ser NULL (assert).
+ * @param visitante Função chamada para cada aresta do grafo. Não deve
+ *        ser NULL (assert).
+ * @param contexto Ponteiro opaco repassado a cada chamada do
+ *        visitante. Pode ser NULL se o visitante não precisar de
+ *        estado externo.
+ * @details Implementado compondo percorrerVertices() com
+ *          percorrerArestasSaindo() para cada vértice visitado. 
+ */
+void percorrerTodasArestas(const Grafo *g, VisitanteArestaCompleta visitante, void *contexto);
+
 #endif

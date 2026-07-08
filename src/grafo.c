@@ -226,3 +226,45 @@ void percorrerArestasSaindo(const Grafo *g, const char *idOrigem,
         atual = atual->prox;
     }
 }
+
+/*
+Composição de percorrerVertices() + percorrerArestasSaindo() para
+cada vértice visitado - dois níveis de embrulho: o externo carrega o
+visitante real (que espera idOrigem + Aresta*) através do nível de
+percorrerVertices (que só entrega Vertice*); o interno carrega o id
+do vértice atual através do nível de percorrerArestasSaindo (que só
+entrega Aresta*, sem origem - daí a necessidade de capturá-la aqui).
+*/
+ 
+typedef struct {
+    const char *idOrigem;
+    VisitanteArestaCompleta visitanteReal;
+    void *contextoReal;
+} ContextoArestaIndividual;
+ 
+static void adaptadorArestaIndividual(Aresta *a, void *contexto){
+    ContextoArestaIndividual *ctx = (ContextoArestaIndividual*) contexto;
+    ctx->visitanteReal(ctx->idOrigem, a, ctx->contextoReal);
+}
+ 
+typedef struct {
+    const Grafo *g;
+    VisitanteArestaCompleta visitanteReal;
+    void *contextoReal;
+} ContextoPercorrerTodasArestas;
+ 
+static void visitanteVerticeParaTodasArestas(Vertice *v, void *contexto){
+    ContextoPercorrerTodasArestas *ctx = (ContextoPercorrerTodasArestas*) contexto;
+    const char *idOrigem = getVerticeId(v);
+ 
+    ContextoArestaIndividual ctxAresta = { idOrigem, ctx->visitanteReal, ctx->contextoReal };
+    percorrerArestasSaindo(ctx->g, idOrigem, adaptadorArestaIndividual, &ctxAresta);
+}
+ 
+void percorrerTodasArestas(const Grafo *g, VisitanteArestaCompleta visitante, void *contexto){
+    assert(g != NULL);
+    assert(visitante != NULL);
+ 
+    ContextoPercorrerTodasArestas ctx = { g, visitante, contexto };
+    percorrerVertices(g, visitanteVerticeParaTodasArestas, &ctx);
+}
