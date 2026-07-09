@@ -27,7 +27,10 @@ OBJS = $(SRC)/hashGenerica.o \
        $(SRC)/filaPrioridade.o    \
        $(SRC)/caminhoMinimo.o     \
        $(SRC)/componentesConexos.o \
-       $(SRC)/ampliacaoViaria.o
+       $(SRC)/ampliacaoViaria.o \
+       $(SRC)/registradores.o \
+       $(SRC)/resolveEndereco.o \
+       $(SRC)/leitorQry.o
 
 # =============================================================================
 # Flags de include compartilhadas
@@ -82,6 +85,16 @@ $(SRC)/componentesConexos.o: $(SRC)/componentesConexos.c $(INC)/componentesConex
 $(SRC)/ampliacaoViaria.o: $(SRC)/ampliacaoViaria.c $(INC)/ampliacaoViaria.h \
                           $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h
 
+$(SRC)/registradores.o: $(SRC)/registradores.c $(INC)/registradores.h
+
+$(SRC)/resolveEndereco.o: $(SRC)/resolveEndereco.c $(INC)/resolveEndereco.h \
+                          $(INC)/cidade.h $(INC)/quadra.h $(INC)/grafo.h $(INC)/vertice.h
+
+$(SRC)/leitorQry.o: $(SRC)/leitorQry.c $(INC)/leitorQry.h \
+                    $(INC)/cidade.h $(INC)/quadra.h $(INC)/grafo.h $(INC)/vertice.h \
+                    $(INC)/registradores.h $(INC)/svg.h $(INC)/resolveEndereco.h \
+                    $(INC)/caminhoMinimo.h $(INC)/componentesConexos.h $(INC)/ampliacaoViaria.h
+
 $(SRC)/main.o: $(SRC)/main.c \
                $(INC)/cidade.h $(INC)/quadra.h $(INC)/hashGenerica.h \
                $(INC)/svg.h $(INC)/leitorGeo.h $(INC)/vertice.h $(INC)/grafo.h \
@@ -105,6 +118,13 @@ DEPS_componentesConexos = $(SRC)/componentesConexos.o $(SRC)/grafo.o $(SRC)/vert
                           $(SRC)/hashGenerica.o
 DEPS_ampliacaoViaria = $(SRC)/ampliacaoViaria.o $(SRC)/grafo.o $(SRC)/vertice.o \
                        $(SRC)/hashGenerica.o
+DEPS_registradores = $(SRC)/registradores.o
+DEPS_resolveEndereco = $(SRC)/resolveEndereco.o $(SRC)/cidade.o $(SRC)/quadra.o \
+                       $(SRC)/hashGenerica.o $(SRC)/grafo.o $(SRC)/vertice.o
+DEPS_leitorQry = $(SRC)/leitorQry.o $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o \
+                 $(SRC)/grafo.o $(SRC)/vertice.o $(SRC)/svg.o $(SRC)/registradores.o \
+                 $(SRC)/resolveEndereco.o $(SRC)/caminhoMinimo.o $(SRC)/filaPrioridade.o \
+                 $(SRC)/componentesConexos.o $(SRC)/ampliacaoViaria.o
 
 test:
 ifndef MODULO
@@ -122,7 +142,7 @@ endif
 # =============================================================================
 MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo vertice grafo \
                     leitorVia filaPrioridade caminhoMinimo componentesConexos \
-                    ampliacaoViaria
+                    ampliacaoViaria registradores resolveEndereco leitorQry
 
 tstall:
 	@for m in $(MODULOS_TESTAVEIS); do \
@@ -136,6 +156,6 @@ clean:
 	rm -f $(SRC)/*.o $(PROJ_NAME)
 	rm -f $(addprefix $(TST)/run_,$(MODULOS_TESTAVEIS))
 	rm -f temp_*.geo temp_*.pm temp_*.svg temp_*.qry temp_*.txt
-	rm -f teste_*_tmp.geo teste_*_tmp.svg teste_*_tmp.via
+	rm -f teste_*_tmp.geo teste_*_tmp.svg teste_*_tmp.via teste_*_tmp.qry teste_*_tmp.txt
 
 .PHONY: ted test tstall clean

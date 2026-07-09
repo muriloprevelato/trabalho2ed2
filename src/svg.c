@@ -130,3 +130,51 @@ void svgCirculo(ArqSvg *f, double cx, double cy, double r, const char *cfill, co
             "fill=\"%s\" stroke=\"%s\" stroke-width=\"%.2f\" />\n",
             cx, cy, r, cfill, cstrk, sw);
 }
+ 
+void svgLinhaTracejada(ArqSvg *f, double x1, double y1, double x2, double y2,
+                        const char *cor, double sw){
+    assert(f   != NULL);
+    assert(cor != NULL);
+    assert(sw  >= 0.0);
+ 
+    fprintf(f->fp,
+            "<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" "
+            "stroke=\"%s\" stroke-width=\"%.2f\" stroke-dasharray=\"4,4\" />\n",
+            x1, y1, x2, y2, cor, sw);
+}
+ 
+void svgPath(ArqSvg *f, const double *pontosX, const double *pontosY, int numPontos,
+             const char *id, const char *cor, double sw){
+    assert(f        != NULL);
+    assert(pontosX  != NULL);
+    assert(pontosY  != NULL);
+    assert(numPontos >= 2);
+    assert(id  != NULL);
+    assert(cor != NULL);
+    assert(sw  >= 0.0);
+ 
+    fprintf(f->fp, "<path d=\"M%.2f,%.2f", pontosX[0], pontosY[0]);
+    for(int i = 1; i < numPontos; i++){
+        fprintf(f->fp, " L%.2f,%.2f", pontosX[i], pontosY[i]);
+    }
+    fprintf(f->fp,
+            "\" stroke=\"%s\" stroke-width=\"%.2f\" fill=\"none\" id=\"%s\" />\n",
+            cor, sw, id);
+}
+ 
+void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio,
+                        const char *cor, double duracaoSegundos){
+    assert(f      != NULL);
+    assert(idPath != NULL);
+    assert(raio   >= 0.0);
+    assert(cor    != NULL);
+    assert(duracaoSegundos > 0.0);
+ 
+    fprintf(f->fp,
+            "<circle r=\"%.2f\" fill=\"%s\">\n"
+            "  <animateMotion dur=\"%.2fs\" repeatCount=\"indefinite\">\n"
+            "    <mpath xlink:href=\"#%s\"/>\n"
+            "  </animateMotion>\n"
+            "</circle>\n",
+            raio, cor, duracaoSegundos, idPath);
+}
