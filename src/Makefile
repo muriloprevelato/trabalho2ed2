@@ -20,9 +20,14 @@ OBJS = $(SRC)/hashGenerica.o \
        $(SRC)/quadra.o       \
        $(SRC)/cidade.o       \
        $(SRC)/svg.o          \
-       $(SRC)/leitorGeo.o	 \
-	   $(SRC)/vertice.o 	 \
-	   $(SRC)/grafo.o
+       $(SRC)/leitorGeo.o    \
+       $(SRC)/vertice.o      \
+       $(SRC)/grafo.o        \
+       $(SRC)/leitorVia.o    \
+       $(SRC)/filaPrioridade.o    \
+       $(SRC)/caminhoMinimo.o     \
+       $(SRC)/componentesConexos.o \
+       $(SRC)/ampliacaoViaria.o
 
 # =============================================================================
 # Flags de include compartilhadas
@@ -62,9 +67,25 @@ $(SRC)/vertice.o: $(SRC)/vertice.c $(INC)/vertice.h
  
 $(SRC)/grafo.o: $(SRC)/grafo.c $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h
 
+$(SRC)/leitorVia.o: $(SRC)/leitorVia.c $(INC)/leitorVia.h \
+                    $(INC)/grafo.h $(INC)/vertice.h
+
+$(SRC)/filaPrioridade.o: $(SRC)/filaPrioridade.c $(INC)/filaPrioridade.h
+
+$(SRC)/caminhoMinimo.o: $(SRC)/caminhoMinimo.c $(INC)/caminhoMinimo.h \
+                        $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h \
+                        $(INC)/filaPrioridade.h
+
+$(SRC)/componentesConexos.o: $(SRC)/componentesConexos.c $(INC)/componentesConexos.h \
+                             $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h
+
+$(SRC)/ampliacaoViaria.o: $(SRC)/ampliacaoViaria.c $(INC)/ampliacaoViaria.h \
+                          $(INC)/grafo.h $(INC)/vertice.h $(INC)/hashGenerica.h
+
 $(SRC)/main.o: $(SRC)/main.c \
                $(INC)/cidade.h $(INC)/quadra.h $(INC)/hashGenerica.h \
-               $(INC)/svg.h $(INC)/leitorGeo.h $(INC)/vertice.h $(INC)/grafo.h
+               $(INC)/svg.h $(INC)/leitorGeo.h $(INC)/vertice.h $(INC)/grafo.h \
+               $(INC)/leitorVia.h
 
 # =============================================================================
 # Testes unitários — target genérico
@@ -76,6 +97,14 @@ DEPS_svg         = $(SRC)/svg.o
 DEPS_leitorGeo   = $(SRC)/leitorGeo.o $(SRC)/cidade.o $(SRC)/quadra.o $(SRC)/hashGenerica.o
 DEPS_vertice     = $(SRC)/vertice.o
 DEPS_grafo       = $(SRC)/grafo.o $(SRC)/vertice.o $(SRC)/hashGenerica.o
+DEPS_leitorVia   = $(SRC)/leitorVia.o $(SRC)/grafo.o $(SRC)/vertice.o $(SRC)/hashGenerica.o
+DEPS_filaPrioridade = $(SRC)/filaPrioridade.o
+DEPS_caminhoMinimo = $(SRC)/caminhoMinimo.o $(SRC)/grafo.o $(SRC)/vertice.o \
+                     $(SRC)/hashGenerica.o $(SRC)/filaPrioridade.o
+DEPS_componentesConexos = $(SRC)/componentesConexos.o $(SRC)/grafo.o $(SRC)/vertice.o \
+                          $(SRC)/hashGenerica.o
+DEPS_ampliacaoViaria = $(SRC)/ampliacaoViaria.o $(SRC)/grafo.o $(SRC)/vertice.o \
+                       $(SRC)/hashGenerica.o
 
 test:
 ifndef MODULO
@@ -91,7 +120,9 @@ endif
 # =============================================================================
 # Roda todos os módulos de teste em sequência
 # =============================================================================
-MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo vertice grafo
+MODULOS_TESTAVEIS = quadra hashGenerica cidade svg leitorGeo vertice grafo \
+                    leitorVia filaPrioridade caminhoMinimo componentesConexos \
+                    ampliacaoViaria
 
 tstall:
 	@for m in $(MODULOS_TESTAVEIS); do \
@@ -105,6 +136,6 @@ clean:
 	rm -f $(SRC)/*.o $(PROJ_NAME)
 	rm -f $(addprefix $(TST)/run_,$(MODULOS_TESTAVEIS))
 	rm -f temp_*.geo temp_*.pm temp_*.svg temp_*.qry temp_*.txt
-	rm -f teste_*_tmp.geo teste_*_tmp.svg
+	rm -f teste_*_tmp.geo teste_*_tmp.svg teste_*_tmp.via
 
 .PHONY: ted test tstall clean

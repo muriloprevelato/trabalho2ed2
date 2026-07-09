@@ -95,7 +95,7 @@ void test_lerArquivoVia_VerticesEArestasComAtributosCorretos(void){
     TEST_ASSERT_EQUAL_STRING("-", getArestaLesq(ctx.capturada));
     TEST_ASSERT_FLOAT_WITHIN(0.001, 70.0, getArestaCmp(ctx.capturada));
     TEST_ASSERT_FLOAT_WITHIN(0.001, 3.5, getArestaVm(ctx.capturada));
-    TEST_ASSERT_EQUAL_STRING("Rua_Belo_Horizonte", getArestaNome(ctx.capturada));
+    TEST_ASSERT_EQUAL_STRING("Rua1", getArestaNome(ctx.capturada));
 
     destruirGrafo(g);
     remove(ARQ_TMP);
