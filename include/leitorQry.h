@@ -1,5 +1,5 @@
-#ifndef QRY_H
-#define QRY_H
+#ifndef LEITOR_QRY_H
+#define LEITOR_QRY_H
 
 #include <stdio.h>
 #include "cidade.h"
