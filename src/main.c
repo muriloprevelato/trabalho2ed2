@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
 #include "cidade.h"
 #include "quadra.h"
 #include "svg.h"
@@ -9,6 +8,8 @@
 #include "grafo.h"
 #include "vertice.h"
 #include "leitorVia.h"
+#include "registradores.h"
+#include "leitorQry.h"
 
 #define PATH_MAX_TAM  1024 // tamanho de dir_entrada, dir_saida e nomes de arquivo
 #define NOME_MAX_TAM   256
@@ -46,108 +47,6 @@ static const char* nomeArquivo(const char *caminho){
     return p ? p + 1 : caminho;
 }
 
-// Contexto para cálculo do bounding box.
-
-typedef struct {
-    double xMin, yMin;
-    double xMax, yMax;
-} ContextoBBox;
-
-static void visitanteBBox(Quadra *q, void *contexto){
-    ContextoBBox *ctx = (ContextoBBox *) contexto;
-
-    // Âncora SE = canto superior-esquerdo na tela (notação invertida).
-    double x  = getQuadraX(q);
-    double y  = getQuadraY(q);
-    double x2 = x + getQuadraW(q);
-    double y2 = y + getQuadraH(q);
-
-    if(x < ctx->xMin) ctx->xMin = x;
-    if(y < ctx->yMin) ctx->yMin = y;
-    if(x2 > ctx->xMax) ctx->xMax = x2;
-    if(y2 > ctx->yMax) ctx->yMax = y2;
-}
-
-// Contexto para o callback de desenho.
-typedef struct {
-    ArqSvg *svg;
-} ContextoDesenho;
-
-static void visitanteDesenho(Quadra *q, void *contexto){
-    ContextoDesenho *ctx = (ContextoDesenho *) contexto;
-
-    // Âncora SE = (x, y) na notação do projeto.
-    // svgRetangulo espera o canto superior-esquerdo - que, na notação
-    // invertida do projeto, É a âncora (menor x, menor y na tela).
-    // Portanto a conversão é direta: passa x e y sem ajuste.
-    svgRetangulo(ctx->svg,
-                 getQuadraX(q),
-                 getQuadraY(q),
-                 getQuadraW(q),
-                 getQuadraH(q),
-                 getQuadraCFill(q),
-                 getQuadraCStrk(q),
-                 getQuadraSw(q));
-
-    // Texto do CEP posicionado levemente deslocado do canto superior-esquerdo da quadra, para ficar visível dentro do retângulo.
-    svgTexto(ctx->svg,
-             getQuadraX(q) + 2.0,
-             getQuadraY(q) + 10.0,
-             getQuadraCep(q),
-             "black");
-}
- 
-// Estende o bounding box (já calculado a partir das quadras) para
-// também considerar as coordenadas dos vértices do grafo 
-static void visitanteBBoxVertice(Vertice *v, void *contexto){
-    ContextoBBox *ctx = (ContextoBBox *) contexto;
- 
-    double x = getVerticeX(v);
-    double y = getVerticeY(v);
- 
-    if(x < ctx->xMin) ctx->xMin = x;
-    if(y < ctx->yMin) ctx->yMin = y;
-    if(x > ctx->xMax) ctx->xMax = x;
-    if(y > ctx->yMax) ctx->yMax = y;
-}
- 
-#define RAIO_VERTICE 2.0    // raio do círculo que marca cada vértice no SVG
-#define COR_VIA "gray" // .via não tem comando de cor. Escolhi uma cor neutra. Fiz testes com amarelo e estava ruim
-#define SW_VIA 1.0    
- 
-// Contexto para desenhar as arestas de saída de UM vértice específico
-typedef struct {
-    ArqSvg *svg;
-    Vertice *origemAtual;
-} ContextoDesenhoArestas;
- 
-static void visitanteDesenharAresta(Aresta *a, void *contexto){
-    ContextoDesenhoArestas *ctx = (ContextoDesenhoArestas *) contexto;
-    Vertice *destino = getArestaDestino(a);
- 
-    svgLinha(ctx->svg, getVerticeX(ctx->origemAtual), getVerticeY(ctx->origemAtual), getVerticeX(destino),getVerticeY(destino), COR_VIA, SW_VIA);
-}
- 
-// Contexto para o padrão composto documentado em grafo.h: percorre
-// TODOS os vértices e, para cada um, percorre suas arestas de saída
-typedef struct {
-    ArqSvg *svg;
-    Grafo *grafo;
-} ContextoDesenhoGrafo;
- 
-static void visitanteDesenharVerticeEArestas(Vertice *v, void *contexto){
-    ContextoDesenhoGrafo *ctx = (ContextoDesenhoGrafo *) contexto;
-
-    svgCirculo(ctx->svg, getVerticeX(v), getVerticeY(v), RAIO_VERTICE, COR_VIA, "black", 0.5);
-
-    ContextoDesenhoArestas ctxArestas = { ctx->svg, v };
-    percorrerArestasSaindo(ctx->grafo, getVerticeId(v),
-                            visitanteDesenharAresta, &ctxArestas);
-}
-
-
-// main 
-
 int main(int argc, char const *argv[]){
     char dir_entrada[PATH_MAX_TAM] = "."; // default: diretório corrente
     char dir_saida  [PATH_MAX_TAM] = "";
@@ -177,8 +76,6 @@ int main(int argc, char const *argv[]){
         i++;
     }
 
-    // Validação dos obrigatórios
-
     if(arq_geo[0] == '\0'){
         fprintf(stderr, "[main] erro: parametro -f (arq.geo) eh obrigatorio\n");
         return 1;
@@ -188,24 +85,23 @@ int main(int argc, char const *argv[]){
         return 1;
     }
 
-    // Montagem dos caminhos de entrada
-
     char caminho_geo[CAMINHO_MAX_TAM];
     snprintf(caminho_geo, CAMINHO_MAX_TAM, "%s/%s", dir_entrada, arq_geo);
-
-    // Montagem dos caminhos de saída
 
     char base_geo[NOME_MAX_TAM];
     nomeBase(base_geo, NOME_MAX_TAM, arq_geo);
 
-    // SVG produzido após a leitura do .geo
+    // SVG produzido após a leitura do .geo: <base_geo>.svg
     char caminho_svg_geo[CAMINHO_MAX_TAM];
     snprintf(caminho_svg_geo, CAMINHO_MAX_TAM, "%s/%s.svg", dir_saida, base_geo);
 
-    // SVG e TXT produzidos após o .qry
+    // Caminho de entrada do .qry 
+    char caminho_qry[CAMINHO_MAX_TAM];
     char caminho_svg_qry[CAMINHO_MAX_TAM];
     char caminho_txt_qry[CAMINHO_MAX_TAM];
     if(arq_qry[0] != '\0'){
+        snprintf(caminho_qry, CAMINHO_MAX_TAM, "%s/%s", dir_entrada, arq_qry);
+
         char base_qry[NOME_MAX_TAM];
         nomeBase(base_qry, NOME_MAX_TAM, nomeArquivo(arq_qry));
         snprintf(caminho_svg_qry, CAMINHO_MAX_TAM, "%s/%s-%s.svg",
@@ -213,8 +109,6 @@ int main(int argc, char const *argv[]){
         snprintf(caminho_txt_qry, CAMINHO_MAX_TAM, "%s/%s-%s.txt",
                  dir_saida, base_geo, base_qry);
     }
-
-    // Leitura do .geo
 
     Cidade *cidade = criarCidade();
     if(cidade == NULL){
@@ -229,13 +123,16 @@ int main(int argc, char const *argv[]){
         return 1;
     }
 
-    // Leitura do .via -> Opcional
-
+    /*
+    Leitura do .via (opcional) 
+    Diferente de -f (obrigatório, falha aborta o programa), -v é
+    opcional.
+    */
     Grafo *grafo = NULL;
     if(arq_via[0] != '\0'){
         char caminho_via[CAMINHO_MAX_TAM];
         snprintf(caminho_via, CAMINHO_MAX_TAM, "%s/%s", dir_entrada, arq_via);
- 
+
         grafo = criarGrafo();
         if(grafo == NULL){
             fprintf(stderr, "[main] aviso: falha ao criar o grafo,"
@@ -249,22 +146,15 @@ int main(int argc, char const *argv[]){
         }
     }
 
-    // SVG inicial (após leitura do .geo)
+    //  Dimensões do mapa (quadras + grafo, se houver)
+    // Centralizado em leitorQry.h -> usado tanto para o SVG do .geo
+    // quanto, mais abaixo, para o SVG combinado do .qry (mesma cidade e
+    // grafo, mesmas dimensões, calculadas uma única vez).
 
-    // Passo 1: calcula o bounding box de todas as quadras para dimensionar
-    // o canvas - assim o SVG se ajusta ao tamanho real do mapa.
-    ContextoBBox bbox = { DBL_MAX, DBL_MAX, -DBL_MAX, -DBL_MAX };
-    percorrerQuadrasCidade(cidade, visitanteBBox, &bbox);
-    if(grafo != NULL){
-        percorrerVertices(grafo, visitanteBBoxVertice, &bbox);
-    }
- 
-    // Cidade vazia e sem grafo (ou grafo tambem vazio): canvas minimo.
-    if(bbox.xMin == DBL_MAX){
-        bbox.xMax = bbox.yMax = 100.0;
-    }
- 
-    ArqSvg *svgGeo = abreEscritaSvg(caminho_svg_geo, bbox.xMax, bbox.yMax);
+    double larguraMapa, alturaMapa;
+    calcularDimensoesMapa(cidade, grafo, &larguraMapa, &alturaMapa);
+
+    ArqSvg *svgGeo = abreEscritaSvg(caminho_svg_geo, larguraMapa, alturaMapa);
     if(svgGeo == NULL){
         fprintf(stderr, "[main] erro: nao foi possivel criar o SVG: %s\n",
                 caminho_svg_geo);
@@ -273,33 +163,42 @@ int main(int argc, char const *argv[]){
         return 1;
     }
 
-    // Passo 2: desenha todas as quadras.
-    ContextoDesenho ctxDesenho = { svgGeo };
-    percorrerQuadrasCidade(cidade, visitanteDesenho, &ctxDesenho);
-
-    // Desenha o mapa viário (vértices + arestas) por cima das quadras,
-    // se um .via foi fornecido e lido com sucesso.
-    if(grafo != NULL){
-        ContextoDesenhoGrafo ctxGrafo = { svgGeo, grafo };
-        percorrerVertices(grafo, visitanteDesenharVerticeEArestas, &ctxGrafo);
-    }
-
+    desenharMapaBase(svgGeo, cidade, grafo);
     fechaSvg(svgGeo);
 
-    
-
-    // *** Não implementando ainda .qry 
-
+    //.qry (opcional) 
     if(arq_qry[0] != '\0'){
-        fprintf(stderr, "[main] aviso: -q fornecido mas leitor de consultas ainda"
-                        " nao implementado, ignorando %s\n", arq_qry);
-        (void) caminho_svg_qry;
-        (void) caminho_txt_qry;
+        Registradores *registradores = criarRegistradores();
+        if(registradores == NULL){
+            fprintf(stderr, "[main] aviso: falha ao criar registradores,"
+                            " .qry nao sera processado\n");
+        } else {
+            ArqSvg *svgQry = abreEscritaSvg(caminho_svg_qry, larguraMapa, alturaMapa);
+            FILE *txtQry = fopen(caminho_txt_qry, "w");
+
+            if(svgQry == NULL || txtQry == NULL){
+                fprintf(stderr, "[main] aviso: nao foi possivel criar os arquivos"
+                                " de saida do .qry (%s / %s)\n",
+                        caminho_svg_qry, caminho_txt_qry);
+                if(svgQry != NULL) fechaSvg(svgQry);
+                if(txtQry != NULL) fclose(txtQry);
+            } else {
+                if(processarArquivoQry(caminho_qry, cidade, grafo, registradores,
+                                        svgQry, txtQry) != QRY_OK){
+                    fprintf(stderr, "[main] aviso: nao foi possivel abrir o"
+                                    " arquivo .qry: %s\n", caminho_qry);
+                }
+                fechaSvg(svgQry);
+                fclose(txtQry);
+            }
+
+            destruirRegistradores(registradores);
+        }
     }
 
     // clean
 
-    if(grafo!= NULL) destruirGrafo(grafo);
+    if(grafo != NULL) destruirGrafo(grafo);
     destruirCidade(cidade);
     return 0;
 }

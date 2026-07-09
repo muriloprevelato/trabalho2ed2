@@ -453,10 +453,10 @@ void test_processarArquivoQry_PInterrogacao_RegistradorNaoPreenchido_NaoAborta(v
 
 void test_processarArquivoQry_MvmAntesDeRegs_MutacaoPersisteEntreComandos(void){
     escreverQryTemporario(
-        "mvm 0.0 40.0 0.0 20.0 20.0\n" // derruba vm de v2->v3 pra 0.0 (dentro da regiao)
+        "mvm 0.0 40.0 -10.0 70.0 20.0\n" // regiao [40,110]x[-10,10]: contem v2(50,0) e v3(100,0), nao v1(0,0)
         "regs 5.0\n" // vl=5: a aresta com vm=0 não conta mais
     );
-
+ 
     Cidade *cidade = montarCidadeComQuadra();
     Grafo *grafo = criarGrafo();
     grafoInserirVertice(grafo, criarVertice("v1", 0.0, 0.0));
@@ -464,24 +464,24 @@ void test_processarArquivoQry_MvmAntesDeRegs_MutacaoPersisteEntreComandos(void){
     grafoInserirVertice(grafo, criarVertice("v3", 100.0, 0.0));
     grafoInserirAresta(grafo, "v1", "v2", "-", "-", 50.0, 10.0, "Rua_A");
     grafoInserirAresta(grafo, "v2", "v3", "-", "-", 50.0, 10.0, "Rua_B");
-
+ 
     Registradores *regsB = criarRegistradores();
     ArqSvg *svg = abreEscritaSvg(ARQ_SVG_TMP, 200.0, 200.0);
     FILE *txt = fopen(ARQ_TXT_TMP, "w");
-
+ 
     processarArquivoQry(ARQ_QRY_TMP, cidade, grafo, regsB, svg, txt);
-
+ 
     fechaSvg(svg);
     fclose(txt);
-
+ 
     // Confirma que a mutação do mvm realmente aconteceu no grafo.
     TEST_ASSERT_FLOAT_WITHIN(0.001, 10.0, buscarVmDaAresta(grafo, "v1", "v2")); // não mexida
     TEST_ASSERT_FLOAT_WITHIN(0.001, 0.0, buscarVmDaAresta(grafo, "v2", "v3"));  // derrubada
-
+ 
     char *conteudoTxt = lerArquivoCompleto(ARQ_TXT_TMP);
     TEST_ASSERT_NOT_NULL(conteudoTxt);
     TEST_ASSERT_NOT_NULL(strstr(conteudoTxt, "2")); // regs deveria reportar 2 componentes
-
+ 
     free(conteudoTxt);
     remove(ARQ_QRY_TMP);
     remove(ARQ_SVG_TMP);

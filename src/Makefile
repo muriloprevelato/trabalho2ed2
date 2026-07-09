@@ -98,7 +98,7 @@ $(SRC)/leitorQry.o: $(SRC)/leitorQry.c $(INC)/leitorQry.h \
 $(SRC)/main.o: $(SRC)/main.c \
                $(INC)/cidade.h $(INC)/quadra.h $(INC)/hashGenerica.h \
                $(INC)/svg.h $(INC)/leitorGeo.h $(INC)/vertice.h $(INC)/grafo.h \
-               $(INC)/leitorVia.h
+               $(INC)/leitorVia.h $(INC)/registradores.h $(INC)/leitorQry.h
 
 # =============================================================================
 # Testes unitários — target genérico
