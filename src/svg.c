@@ -146,13 +146,13 @@ void svgLinhaTracejada(ArqSvg *f, double x1, double y1, double x2, double y2,
  
 void svgPath(ArqSvg *f, const double *pontosX, const double *pontosY, int numPontos,
              const char *id, const char *cor, double sw){
-    assert(f        != NULL);
-    assert(pontosX  != NULL);
-    assert(pontosY  != NULL);
+    assert(f != NULL);
+    assert(pontosX != NULL);
+    assert(pontosY != NULL);
     assert(numPontos >= 2);
-    assert(id  != NULL);
+    assert(id != NULL);
     assert(cor != NULL);
-    assert(sw  >= 0.0);
+    assert(sw >= 0.0);
  
     fprintf(f->fp, "<path d=\"M%.2f,%.2f", pontosX[0], pontosY[0]);
     for(int i = 1; i < numPontos; i++){
@@ -163,12 +163,11 @@ void svgPath(ArqSvg *f, const double *pontosX, const double *pontosY, int numPon
             cor, sw, id);
 }
  
-void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio,
-                        const char *cor, double duracaoSegundos){
-    assert(f      != NULL);
+void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio, const char *cor, double duracaoSegundos){
+    assert(f != NULL);
     assert(idPath != NULL);
-    assert(raio   >= 0.0);
-    assert(cor    != NULL);
+    assert(raio >= 0.0);
+    assert(cor != NULL);
     assert(duracaoSegundos > 0.0);
  
     fprintf(f->fp,
@@ -178,4 +177,18 @@ void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio,
             "  </animateMotion>\n"
             "</circle>\n",
             raio, cor, duracaoSegundos, idPath);
+}
+
+void svgRetanguloTracejado(ArqSvg *f, double x, double y, double w, double h, const char *cfill, const char *cstrk, double sw){
+    assert(f != NULL);
+    assert(cfill != NULL);
+    assert(cstrk != NULL);
+    assert(w >= 0.0);
+    assert(h  >= 0.0);
+    assert(sw >= 0.0);
+
+    fprintf(f->fp,
+            "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" "
+            "fill=\"%s\" stroke=\"%s\" stroke-width=\"%.2f\" stroke-dasharray=\"4,4\" />\n",
+            x, y, w, h, cfill, cstrk, sw);
 }

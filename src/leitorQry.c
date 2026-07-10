@@ -203,16 +203,22 @@ static void visitanteAplicarMvm(const char *idOrigem, Aresta *a, void *contexto)
     }
 }
 
-static void processarMvm(const char *linha, int numLinha, Grafo *grafo, FILE *txtSaida){
+#define COR_MVM_FILL "rgba(255,0,0,0.15)" // Vermelho meio claro.
+#define COR_MVM_STRK "red"
+#define SW_MVM 1.0
+
+static void processarMvm(const char *linha, int numLinha, Grafo *grafo,
+                          ArqSvg *svgCombinado, FILE *txtSaida){
     double v, x, y, w, h;
     int campos = sscanf(linha, "mvm %lf %lf %lf %lf %lf", &v, &x, &y, &w, &h);
     if(campos != 5){
         fprintf(stderr, "[leitorQry] linha %d: comando 'mvm' malformado"
-                        " (esperado 5 campos, lidos %d) -> ignorado\n", numLinha, campos);
+                        " (esperado 5 campos, lidos %d) — ignorado\n", numLinha, campos);
         return;
     }
 
     fprintf(txtSaida, "[*] mvm %.2f %.2f %.2f %.2f %.2f\n", v, x, y, w, h);
+    svgRetanguloTracejado(svgCombinado, x, y, w, h, COR_MVM_FILL, COR_MVM_STRK, SW_MVM);
 
     if(grafo == NULL){
         fprintf(txtSaida, "Sistema viario indisponivel.\n\n");
@@ -552,7 +558,7 @@ int processarArquivoQry(const char *caminho, const Cidade *cidade, Grafo *grafo,
         if(strcmp(cmd, "@o?") == 0){
             processarArrobaO(linha, numLinha, cidade, grafo, registradores, svgCombinado, txtSaida);
         } else if(strcmp(cmd, "mvm") == 0){
-            processarMvm(linha, numLinha, grafo, txtSaida);
+            processarMvm(linha, numLinha, grafo, svgCombinado,txtSaida);
         } else if(strcmp(cmd, "regs") == 0){
             processarRegs(linha, numLinha, grafo, svgCombinado, txtSaida);
         } else if(strcmp(cmd, "exp") == 0){

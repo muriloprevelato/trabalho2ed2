@@ -151,6 +151,18 @@ void svgPath(ArqSvg *f, const double *pontosX, const double *pontosY, int numPon
  *        segundos. Deve ser > 0 (assert).
  * @details Gera exatamente o padrão do exemplo do enunciado. O movimento se repete indefinidamente (repeatCount="indefinite").
  */
-void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio,
-                        const char *cor, double duracaoSegundos);
+void svgCirculoAnimado(ArqSvg *f, const char *idPath, double raio, const char *cor, double duracaoSegundos);
+
+/**
+ * @brief Escreve um retângulo com borda tracejada no arquivo SVG.
+ * @param f Ponteiro para o arquivo aberto. Não deve ser NULL (assert).
+ * @param x Coordenada x do canto superior-esquerdo do retângulo (SVG).
+ * @param y Coordenada y do canto superior-esquerdo do retângulo (SVG).
+ * @param w Largura do retângulo. Deve ser >= 0 (assert).
+ * @param h Altura do retângulo. Deve ser >= 0 (assert).
+ * @param cfill Cor de preenchimento (nome SVG, código hexadecimal, ou rgba para transparência). Não deve ser NULL (assert).
+ * @param cstrk Cor da borda tracejada. Não deve ser NULL (assert).
+ * @param sw Espessura da borda. Deve ser >= 0 (assert).
+ */
+void svgRetanguloTracejado(ArqSvg *f, double x, double y, double w, double h, const char *cfill, const char *cstrk, double sw);
 #endif
