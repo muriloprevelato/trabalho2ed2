@@ -20,7 +20,8 @@ Pré-condições (valendo para todo o módulo):
 */
 
 // Constantes.
-#define VERTICE_ID_MAX 20 // Limite máximo do id do vértice.
+#define VERTICE_ID_MAX 64 // Limite máximo do id do vértice. Mudei uma vez que nos testes enviados pelo professor, a quantidade de caracteres excedia o limite anterior.
+
 
 // Tipo opaco para representar o vértice.
 typedef struct Vertice Vertice;

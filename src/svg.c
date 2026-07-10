@@ -61,10 +61,11 @@ ArqSvg* abreEscritaSvg(const char *caminho, double largura, double altura){
     f->fp = fp;
 
     fprintf(f->fp,
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" "
-            "width=\"%.2f\" height=\"%.2f\" "
-            "viewBox=\"0 0 %.2f %.2f\">\n",
-            largura, altura, largura, altura);
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" "
+        "xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+        "width=\"%.2f\" height=\"%.2f\" "
+        "viewBox=\"0 0 %.2f %.2f\">\n",
+        largura, altura, largura, altura);
 
     return f;
 }

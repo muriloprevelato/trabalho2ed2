@@ -63,8 +63,8 @@ void test_criarVertice_CopiaIdDefensivamente(void){
 // id no limite max
 
 void test_criarVertice_IdNoLimiteMaximo(void){
-    // VERTICE_ID_MAX = 20; usamos 19 caracteres visíveis + '\0'.
-    const char *id_longo = "1234567890123456789"; // 19 chars
+    // VERTICE_ID_MAX = 64; usamos 63 caracteres visíveis + '\0'.
+    const char *id_longo = "111111111111111111111111111111111111111111111111111111111111111"; // 63 chars
     Vertice *v = criarVertice(id_longo, 0.0, 0.0);
     TEST_ASSERT_NOT_NULL(v);
 

@@ -13,7 +13,7 @@ static int processarV(const char *linha, int numLinha, Grafo *grafo){
     char   id[VERTICE_ID_MAX];
     double x, y;
 
-    int campos = sscanf(linha, "v %19s %lf %lf", id, &x, &y);
+    int campos = sscanf(linha, "v %63s %lf %lf", id, &x, &y);
     if(campos != 3){
         fprintf(stderr, "[leitorVia] linha %d: comando 'v' malformado"
                         " (esperado 3 campos, lidos %d) - descartado\n",
@@ -50,7 +50,7 @@ static int processarE(const char *linha, int numLinha, Grafo *grafo){
     double cmp, vm;
     char   nome[ARESTA_NOME_MAX];
 
-    int campos = sscanf(linha, "e %19s %19s %19s %19s %lf %lf %63s",
+    int campos = sscanf(linha, "e %63s %63s %19s %19s %lf %lf %63s",
                         idOrigem, idDestino, ldir, lesq, &cmp, &vm, nome);
     if(campos != 7){
         fprintf(stderr, "[leitorVia] linha %d: comando 'e' malformado"

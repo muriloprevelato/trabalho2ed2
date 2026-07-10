@@ -54,14 +54,24 @@ static int processarQ(const char *linha, int numLinha, Cidade *cidade, const Est
 // Processa um comando 'cq'
 // Retorna 1 se atualizou com sucesso, 0 se malformado (com aviso no stderr).
 static int processarCq(const char *linha, int numLinha, EstadoCor *ec){
+    char   swToken[32];
     char   cfill[QUADRA_COR_MAX];
     char   cstrk[QUADRA_COR_MAX];
-    double sw;
 
-    // %31s: limite = QUADRA_COR_MAX - 1
-    int campos = sscanf(linha, "cq %lf %31s %31s", &sw, cfill, cstrk);
+    int campos = sscanf(linha, "cq %31s %31s %31s", swToken, cfill, cstrk);
     if(campos != 3){
-        fprintf(stderr, "[leitorGeo] linha %d: comando 'cq' malformado" " (esperado 3 campos, lidos %d) - descartado\n", numLinha, campos);
+        fprintf(stderr, "[leitorGeo] linha %d: comando 'cq' malformado"
+                        " (esperado 3 campos, lidos %d) — descartado\n",
+                numLinha, campos);
+        return 0;
+    }
+
+    char *fimNumero;
+    double sw = strtod(swToken, &fimNumero);
+    if(fimNumero == swToken){
+        // Nenhum número válido no início do token — isso sim é malformado.
+        fprintf(stderr, "[leitorGeo] linha %d: valor de sw invalido '%s'"
+                        " — comando 'cq' descartado\n", numLinha, swToken);
         return 0;
     }
 

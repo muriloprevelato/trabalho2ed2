@@ -26,7 +26,7 @@ Pré-condições (valendo para todo o módulo):
 */
 
 // Limite máximo da chave armazenada em cada entrada.
-#define FILA_CHAVE_MAX 20
+#define FILA_CHAVE_MAX 64 // Limite máximo do id do vértice. Mudei uma vez que nos testes enviados pelo professor, a quantidade de caracteres excedia o limite anterior.
 
 // Códigos de retorno padrão para facilitar os testes.
 #define FILA_OK    1

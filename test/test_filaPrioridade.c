@@ -250,7 +250,7 @@ void test_inserir_CopiaChaveDefensivamente(void){
 
 void test_chaveNoLimiteMaximo(void){
     // FILA_CHAVE_MAX = 20; usamos 19 caracteres visíveis + '\0'.
-    const char *chave_longa = "1234567890123456789"; // 19 chars
+    const char *chave_longa = "111111111111111111111111111111111111111111111111111111111111111"; // 19 chars
 
     FilaPrioridade *fp = criarFilaPrioridade();
     filaPrioridadeInserir(fp, chave_longa, 1.0);

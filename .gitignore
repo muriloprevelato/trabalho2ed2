@@ -1,0 +1,7 @@
+
+run_tests
+run_tests_*
+*.o
+
+entrada/
+saida/
